@@ -15,4 +15,8 @@ defmodule Creaturecoin do
   def hello do
     :world
   end
+
+  def mine do
+
+  end
 end
