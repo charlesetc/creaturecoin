@@ -1,21 +1,8 @@
 # Creaturecoin
 
-**TODO: Add description**
+Checkout [crypto.creatures.world](https://crypto.creatures.world) for more info!
 
-## Installation
+## Mining
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `creaturecoin` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:creaturecoin, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/creaturecoin](https://hexdocs.pm/creaturecoin).
-
+1. Clone this repo.
+2. Generate RSA keys in `keys` directory called `public.pem` and `private.pem`.
