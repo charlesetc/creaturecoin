@@ -25,4 +25,5 @@ creaturecoin-*.tar
 *.swp
 
 ledger.binary
+ledger.txt
 keys/*
