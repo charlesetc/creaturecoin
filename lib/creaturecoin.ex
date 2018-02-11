@@ -42,11 +42,13 @@ defmodule Pickaxe do
 end
 
 defmodule Ledger do
+  @binary_filename "ledger.binary"
+
   def loop(chain) do
     receive do
       :initialize ->
-        if File.exists?("ledger.json") do
-            new_chain = File.read!("ledger.json") |> :erlang.binary_to_term
+        if File.exists?(@binary_filename) do
+            new_chain = File.read!(@binary_filename) |> :erlang.binary_to_term
             loop(new_chain)
         else
             loop([])
@@ -60,7 +62,7 @@ defmodule Ledger do
   end
 
   def save(chain) do
-    File.write("ledger.json", :erlang.term_to_binary chain)
+    File.write(@binary_filename, :erlang.term_to_binary chain)
   end 
 end
 

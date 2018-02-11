@@ -23,3 +23,5 @@ erl_crash.dump
 creaturecoin-*.tar
 
 *.swp
+
+ledger.binary
