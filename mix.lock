@@ -1,4 +1,6 @@
 %{
+  "ex_crypto": {:hex, :ex_crypto, "0.8.0", "1857428bec34fe033d9ec44ef02b098695e0e27c6048ae38ca4a2c79d6435a1d", [:mix], [{:poison, ">= 2.0.0", [hex: :poison, repo: "hexpm", optional: false]}], "hexpm"},
   "libcluster": {:hex, :libcluster, "2.1.1", "418c73a7c0dab68ed66b782aa4afd589ab69a87ce4e303f2e20c46474c475611", [:mix], [{:poison, "~> 3.0", [hex: :poison, repo: "hexpm", optional: false]}], "hexpm"},
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
+  "rsa_ex": {:hex, :rsa_ex, "0.2.1", "5c2c278270ba2bc7beeb268cc9f6e37f976b81011631a5111b86fb8528785a3f", [:mix], [], "hexpm"},
 }
