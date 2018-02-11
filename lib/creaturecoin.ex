@@ -44,11 +44,24 @@ end
 defmodule Ledger do
   def loop(chain) do
     receive do
+      :initialize ->
+        if File.exists?("ledger.json") do
+            new_chain = File.read!("ledger.json") |> :erlang.binary_to_term
+            loop(new_chain)
+        else
+            loop([])
+        end
       {:new_block, block} ->
-      IO.inspect(chain |> Enum.map(fn {hash, block} -> Base.encode16(hash) end))
-      loop([block] ++ chain)
+        IO.inspect(chain |> Enum.map(fn {hash, block} -> Base.encode16(hash) end))
+        new_chain = [block] ++ chain
+        save(chain)
+        loop(new_chain)
     end
   end
+
+  def save(chain) do
+    File.write("ledger.json", :erlang.term_to_binary chain)
+  end 
 end
 
 defmodule Miner do
@@ -110,6 +123,7 @@ defmodule Miner do
   def start do
     {:ok, ledger_pid} = Task.start(Ledger, :loop, [[]])
     Process.register ledger_pid, :ledger
+    send ledger_pid, :initialize
 
     initial_state = %{
       :owner_id => "Charles",
