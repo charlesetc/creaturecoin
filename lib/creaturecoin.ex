@@ -45,7 +45,8 @@ defmodule Ledger do
   def loop(chain) do
     receive do
       {:new_block, block} ->
-        loop([block] ++ chain)
+      IO.inspect(chain |> Enum.map(fn {hash, block} -> Base.encode16(hash) end))
+      loop([block] ++ chain)
     end
   end
 end
@@ -64,6 +65,7 @@ defmodule Miner do
         IO.puts("found a block! " <> encoded_hash)
 
         # record block
+        record_block(block)
 
         # send block to others
         Node.list() |> Enum.map(fn node -> Miner.broadcast_block(node, block) end)
