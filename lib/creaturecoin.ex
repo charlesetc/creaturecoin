@@ -15,39 +15,106 @@ defmodule Utils do
 
 end
 
-defmodule Miner do
-  @zeros 3
+defmodule Pickaxe do
+  @zeros 4
 
-  def listen do
+  def mine(state) do
+    {:ok, _} = Task.start(Pickaxe, :loop, [state, self()])
     receive do
-      {:found_block, hash, block} ->
-        # TODO: broadcast to rest of peoples
-        IO.puts("found a block! ")
-        IO.inspect(Utils.binary_to_list(hash))
+      :stop -> nil
+      {:we_found_block, block} -> send state[:miner_pid], {:we_found_block, block}
     end
-    listen()
   end
 
-  def mine(miner_pid, owner, last_block, extra_data) do
-    block = %{
-      :owner => owner,
-      :last_block => last_block,
-      :extra_data => extra_data,
-      :random_bits => Utils.random_binary(128),
-    }
+  def loop(state, pickaxe_pid) do
+    data = state
+      |> Map.put(:random_bits, Utils.random_binary(64))
+      |> Map.delete(:miner_pid)
 
-    hash = :crypto.hash(:sha256, Poison.encode!(block))
-
+    hash = :crypto.hash(:sha256, Poison.encode!(data))
     # recurse unless we have a valid block
     if String.slice(Base.encode16(hash), 0..@zeros-1) == String.duplicate("0", @zeros) do
-      send(miner_pid, {:found_block, hash, block})
+      send(pickaxe_pid, {:we_found_block, {hash, data}})
     else
-      mine(miner_pid, owner, last_block, extra_data)
+      loop(state, pickaxe_pid)
     end
+  end
+end
+
+defmodule Ledger do
+  def loop(chain) do
+    receive do
+      {:new_block, block} ->
+        loop([block] ++ chain)
+    end
+  end
+end
+
+defmodule Miner do
+
+  def loop(state) do
+    start_pickaxe(state)
+
+    receive do
+      {:we_found_block, block} ->
+        {hash, data} = block
+
+        # print block
+        encoded_hash = Base.encode16(hash)
+        IO.puts("found a block! " <> encoded_hash)
+
+        # record block
+
+        # send block to others
+        Node.list() |> Enum.map(fn node -> Miner.broadcast_block(node, block) end)
+
+        # keep mining
+        loop(Map.put(state, :last_block, encoded_hash))
+
+      {:transaction_took_place} -> nil
+      {:someone_found_block, block} ->
+        {hash, data} = block
+        encoded_hash = Base.encode16(hash)
+
+        IO.puts("Damn! someone found a block before me " <> encoded_hash)
+        record_block(block)
+        # TODO stop miner
+
+        # keep mining
+        loop(Map.put(state, :last_block, encoded_hash))
+    end
+  end
+
+  def record_block(block) do
+    send Process.whereis(:ledger), {:new_block, block}
+  end
+
+  def broadcast_block(node, block) do
+    Node.spawn node, fn ->
+      miner_pid = Process.whereis(:miner)
+      if miner_pid == nil do
+        IO.puts("NOOOO")
+      else
+        send(miner_pid, {:someone_found_block, block})
+      end
+    end
+  end
+
+  def start_pickaxe(state) do
+    pickaxe_state = Map.put(state, :miner_pid, :erlang.self())
+    {:ok, _} = Task.start(Pickaxe, :mine, [pickaxe_state])
   end
 
   def start do
-    pid = spawn(Miner, :listen, [])
-    mine(pid, "charles chamberlain!", "no last block", "nope")
+    {:ok, ledger_pid} = Task.start(Ledger, :loop, [[]])
+    Process.register ledger_pid, :ledger
+
+    initial_state = %{
+      :owner_id => "Charles",
+      :last_block => nil,
+      :transactions => []
+    }
+    {:ok, miner_pid} = Task.start(Miner, :loop, [initial_state])
+    Process.register miner_pid, :miner
   end
 end
