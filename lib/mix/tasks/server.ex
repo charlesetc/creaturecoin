@@ -3,6 +3,6 @@ defmodule Mix.Tasks.Mine do
 
   @shortdoc "Mine some creaturecoin"
   def run(_) do
-    Miner.start
+    Creaturecoin.start
   end
 end
